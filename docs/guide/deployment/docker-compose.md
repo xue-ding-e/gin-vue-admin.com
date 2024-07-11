@@ -109,11 +109,22 @@ FROM alpine:latest
 # 镜像编写者及邮箱
 LABEL MAINTAINER="SliverHorn@sliver_horn@qq.com"
 
+# (可选)设置中国上海时区
+ENV TZ=Asia/Shanghai
+# 安装 tzdata 和 openntpd
+RUN apk update && apk add --no-cache tzdata openntpd \
+    && ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+
+
 # 声明工作目录
 WORKDIR /go/src/gin-vue-admin
 
-# 把/go/src/gin-vue-admin整个文件夹的文件到当前工作目录
-COPY --from=0 /go/src/gin-vue-admin ./
+# 把/go/src/gin-vue-admin中的可执行文件以及配置文件(resource模板文件)添加进入docker中
+COPY --from=0 /go/src/gin-vue-admin/server/server ./
+COPY --from=0 /go/src/gin-vue-admin/server/config.docker.yaml ./
+COPY --from=0 /go/src/gin-vue-admin/server/resource ./
+
 
 EXPOSE 8888
 
